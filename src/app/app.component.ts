@@ -7,4 +7,6 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'maze-game';
+  rows = new Array(10);
+  columns =  new Array(10);
 }
