@@ -35,6 +35,9 @@ export class AppComponent implements OnInit {
     this.mazeHeight = +prompt('please enter Height');
   }
 
+  /**
+   * Places Mario on almost center of the Grid board
+   */
   private setMarioPositions(): void {
     this.marioPosition.row = Math.round(this.mazeWidth / 2) - 1;
     this.marioPosition.column = Math.round(this.mazeHeight / 2) - 1;
@@ -47,8 +50,8 @@ export class AppComponent implements OnInit {
 
   private setRandomToadPositions(): void {
     while (
-      this.toadPosition.length <
-      Math.round((this.mazeHeight + this.mazeWidth) / 2)
+      // generates number of toads based on height and width of the maze
+      this.toadPosition.length < Math.round((this.mazeHeight + this.mazeWidth) / 2)
     ) {
       const rowNumber = this.uniqueRandom();
       const obj: CharacterPosition = {
@@ -61,31 +64,40 @@ export class AppComponent implements OnInit {
 
   @HostListener('window:keyup', ['$event'])
   keyEvent(event: KeyboardEvent) {
-    
     this.increaseStepCount();
-    if (event.keyCode === KEY_CODE.RIGHT_ARROW) {
+    this.setMarioDirectionOnArrowKeys(event.keyCode);
+    this.checkMarioGetsToad();
+  }
+
+  /**
+   * Detects the arrow buttons clicked and changes the direction of the mario accordingly
+   * @param keyCode 
+   */
+  private setMarioDirectionOnArrowKeys(keyCode: number): void {
+    if (keyCode === KEY_CODE.RIGHT_ARROW) {
       this.marioPosition.row = ++this.marioPosition.row;
     }
 
-    if (event.keyCode === KEY_CODE.LEFT_ARROW) {
+    if (keyCode === KEY_CODE.LEFT_ARROW) {
       this.marioPosition.row = --this.marioPosition.row;
     }
 
-    if (event.keyCode === KEY_CODE.UP_ARROW) {
+    if (keyCode === KEY_CODE.UP_ARROW) {
       this.marioPosition.column = --this.marioPosition.column;
     }
 
-    if (event.keyCode === KEY_CODE.DOWN_ARROW) {
+    if (keyCode === KEY_CODE.DOWN_ARROW) {
       this.marioPosition.column = ++this.marioPosition.column;
     }
-
-    this.checkMarioGetsToad();
   }
 
   private increaseStepCount(): void {
     this.totalStepCountsSubject.next(this.totalStepCountsSubject.getValue() + 1);
   }
 
+  /**
+   * Keeps checking for every mario move if he crossed a toad
+   */
   checkMarioGetsToad(): void {
     this.toadPosition = this.checkMarioCrossesToad();
     if (this.toadPosition.length === 0) {
@@ -104,6 +116,11 @@ export class AppComponent implements OnInit {
     );
   }
 
+  /**
+   * sets the initial positions of the toad by checking the row and column number 
+   * @param rowIndex 
+   * @param columnIndex 
+   */
   checkToad(rowIndex: number, columnIndex: number): boolean {
     return (
       this.toadPosition.filter(
@@ -113,6 +130,11 @@ export class AppComponent implements OnInit {
     );
   }
 
+  /**
+   * Used for Generating a unique random set of number
+   * Pass the already generated numbers to avoid regenerating again
+   * @param compareNumbers 
+   */
   private uniqueRandom(...compareNumbers): number {
     let uniqueNumber: number;
     do {
