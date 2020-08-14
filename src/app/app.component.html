@@ -1,4 +1,4 @@
-<div *ngIf="toadPosition" class="grid">
+<div *ngIf="toadPosition && (renderBoard$ | async)" class="grid">
   <div *ngFor="let row of rows; let rowIndex = index">
     <div *ngFor="let column of columns; let columnIndex = index" class="square">
       <img *ngIf="rowIndex === marioPosition.row && columnIndex === marioPosition.column" src="assets/mario.png" width="40px" height="40px" alt="mario" />

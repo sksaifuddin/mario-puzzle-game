@@ -1,91 +1,129 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { KEY_CODE } from './models/key-code.enum';
+import { CharacterPosition } from './models/character-position.model';
 
-enum KEY_CODE {
-  RIGHT_ARROW = 39,
-  LEFT_ARROW = 37,
-  DOWN_ARROW = 40,
-  UP_ARROW = 38,
-}
-
-interface CharacterPosition {
-  row: number;
-  column: number;
-}
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
-  title = 'maze-game';
   refresh: boolean = true;
-  rows = new Array(10);
-  columns =  new Array(10);
-  marioPosition: CharacterPosition = {
-    row: 5,
-    column: 5
-  }
-  toadPosition: CharacterPosition[] = []
-  totalStepCounts: BehaviorSubject<number> = new BehaviorSubject(0);
+  mazeHeight: number;
+  mazeWidth: number;
+  rows: any = [];
+  columns: any = [];
+  marioPosition: CharacterPosition = { row: 0, column: 0 };
+  toadPosition: CharacterPosition[] = [];
+  private totalStepCountsSubject: BehaviorSubject<number> = new BehaviorSubject(
+    0
+  );
+  private renderBoardSubject: BehaviorSubject<boolean> = new BehaviorSubject(
+    false
+  );
+  renderBoard$ = this.renderBoardSubject.asObservable();
 
   constructor() {}
 
   ngOnInit(): void {
-    while(this.toadPosition.length < 10) {
-      const rowNumber = this.uniqueRandom();
-      const obj = { row:  rowNumber, column: this.uniqueRandom(rowNumber)};
-      this.toadPosition.push(obj);
+    this.takeBoardDimensionsFromUser();
+    this.setMarioPositions();
+    this.setBoardDimensions();
+    this.setRandomToadPositions();10
+    this.renderBoardSubject.next(true);
   }
+
+  private takeBoardDimensionsFromUser(): void {
+    this.mazeWidth = +prompt('please enter width');
+    this.mazeHeight = +prompt('please enter Height');
+  }
+
+  private setMarioPositions(): void {
+    this.marioPosition.row = Math.round(this.mazeWidth / 2) - 1;
+    this.marioPosition.column = Math.round(this.mazeHeight / 2) - 1;
+  }
+
+  private setBoardDimensions(): void {
+    this.rows = new Array(this.mazeWidth);
+    this.columns = new Array(+this.mazeWidth);
+  }
+
+  private setRandomToadPositions(): void {
+    while (
+      this.toadPosition.length <
+      Math.round((this.mazeHeight + this.mazeWidth) / 2)
+    ) {
+      const rowNumber = this.uniqueRandom();
+      const obj: CharacterPosition = {
+        row: rowNumber,
+        column: this.uniqueRandom(rowNumber),
+      };
+      this.toadPosition.push(obj);
+    }
   }
 
   @HostListener('window:keyup', ['$event'])
   keyEvent(event: KeyboardEvent) {
-    this.totalStepCounts.next(this.totalStepCounts.getValue()+1);
+    
+    this.increaseStepCount();
     if (event.keyCode === KEY_CODE.RIGHT_ARROW) {
-      console.log('right arrow pressed');
       this.marioPosition.row = ++this.marioPosition.row;
     }
 
     if (event.keyCode === KEY_CODE.LEFT_ARROW) {
-      console.log('left arrow pressed');
       this.marioPosition.row = --this.marioPosition.row;
     }
 
     if (event.keyCode === KEY_CODE.UP_ARROW) {
-      console.log('up arrow pressed');
       this.marioPosition.column = --this.marioPosition.column;
     }
 
     if (event.keyCode === KEY_CODE.DOWN_ARROW) {
-      console.log('down arrow pressed');
       this.marioPosition.column = ++this.marioPosition.column;
     }
 
-    this.toadPosition = this.toadPosition.filter((positions: CharacterPosition) => 
-        !(positions.row === this.marioPosition.row && positions.column === this.marioPosition.column)
-    )
+    this.checkMarioGetsToad();
+  }
 
-    if(this.toadPosition.length === 0) {
-      window.alert(`You completed in ${this.totalStepCounts.getValue()} steps`);
+  private increaseStepCount(): void {
+    this.totalStepCountsSubject.next(this.totalStepCountsSubject.getValue() + 1);
+  }
+
+  checkMarioGetsToad(): void {
+    this.toadPosition = this.checkMarioCrossesToad();
+    if (this.toadPosition.length === 0) {
+      window.alert(
+        `You completed in ${this.totalStepCountsSubject.getValue()} steps`
+      );
     }
-    console.log('remaining positions', this.toadPosition);
-
   }
 
-  checkToad(rowIndex: number, columnIndex: number): boolean {    
-   return this.toadPosition.filter((positions: CharacterPosition) => 
-        positions.row === rowIndex && positions.column === columnIndex).length === 1;
+  private checkMarioCrossesToad(): CharacterPosition[] {
+    return this.toadPosition.filter((positions: CharacterPosition) =>
+    !(
+      positions.row === this.marioPosition.row &&
+      positions.column === this.marioPosition.column
+      )
+    );
   }
 
-  uniqueRandom(...compareNumbers): number {
-    let uniqueNumber;
+  checkToad(rowIndex: number, columnIndex: number): boolean {
+    return (
+      this.toadPosition.filter(
+        (positions: CharacterPosition) =>
+          positions.row === rowIndex && positions.column === columnIndex
+      ).length > 0
+    );
+  }
+
+  private uniqueRandom(...compareNumbers): number {
+    let uniqueNumber: number;
     do {
-        uniqueNumber = Math.floor(Math.random() * 9);
-    } while(compareNumbers.includes(uniqueNumber));
+      uniqueNumber = Math.floor(
+        Math.random() * Math.round((this.mazeHeight + this.mazeWidth) / 2)
+      );
+    } while (compareNumbers.includes(uniqueNumber));
     return uniqueNumber;
   }
-
 }
-
-
