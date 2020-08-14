@@ -16,12 +16,8 @@ export class AppComponent implements OnInit {
   columns: any = [];
   marioPosition: CharacterPosition = { row: 0, column: 0 };
   toadPosition: CharacterPosition[] = [];
-  private totalStepCountsSubject: BehaviorSubject<number> = new BehaviorSubject(
-    0
-  );
-  private renderBoardSubject: BehaviorSubject<boolean> = new BehaviorSubject(
-    false
-  );
+  private totalStepCountsSubject: BehaviorSubject<number> = new BehaviorSubject(0);
+  private renderBoardSubject: BehaviorSubject<boolean> = new BehaviorSubject(false);
   renderBoard$ = this.renderBoardSubject.asObservable();
 
   constructor() {}
@@ -30,7 +26,7 @@ export class AppComponent implements OnInit {
     this.takeBoardDimensionsFromUser();
     this.setMarioPositions();
     this.setBoardDimensions();
-    this.setRandomToadPositions();10
+    this.setRandomToadPositions();
     this.renderBoardSubject.next(true);
   }
 
