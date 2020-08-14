@@ -9,13 +9,13 @@ import { CharacterPosition } from './models/character-position.model';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
-  refresh: boolean = true;
   mazeHeight: number;
   mazeWidth: number;
   rows: any = [];
   columns: any = [];
   marioPosition: CharacterPosition = { row: 0, column: 0 };
   toadPosition: CharacterPosition[] = [];
+  
   private totalStepCountsSubject: BehaviorSubject<number> = new BehaviorSubject(0);
   private renderBoardSubject: BehaviorSubject<boolean> = new BehaviorSubject(false);
   renderBoard$ = this.renderBoardSubject.asObservable();
